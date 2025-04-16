@@ -1,1 +1,18 @@
-
+services:
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Europe/Paris
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=monmotdepasse
+      - N8N_HOST=n8n.local
+      - WEBHOOK_URL=http://n8n.local/
+      - N8N_PORT=5678
+      - DB_SQLITE_VACUUM_ON_STARTUP=true
+    volumes:
+      - ./n8n_data:/home/node/.n8n
