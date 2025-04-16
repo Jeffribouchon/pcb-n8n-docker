@@ -1,25 +1,31 @@
-# PlatformCars B2B
+# n8n - Automatisation avec Docker
 
-**Plateforme automobile B2B dédiée aux professionnels de l’achat-revente.**
-
-PlatformCars B2B simplifie l'approvisionnement, la logistique et la revente de véhicules pour les marchands automobiles. Notre plateforme met en relation les vendeurs et acheteurs professionnels tout en assurant confidentialité, fluidité et gain de temps.
+Ce projet permet de lancer **n8n** (outil d'automatisation de workflows) via **Docker Compose**, avec des volumes persistants et une configuration prête à être utilisée sur un réseau local.
 
 ---
 
-## 🚗 Ce que nous proposons
+## Fonctionnalités
 
-### Offres disponibles :
-- **Freemium** : Accès gratuit à une sélection de véhicules.
-- **Abonnements Premium** : Incluent des services exclusifs :
-  - Logistique (transport de véhicules)
-  - Reprise VO (véhicules d’occasion)
-  - Financement
-  - Conseil en pricing
-  - Accès à des offres exclusives
+- Installation de n8n via Docker
+- Volumes pour la persistance des données
+- Authentification basique activée
+- Accessible depuis d'autres machines du réseau local
+- Prêt pour une extension vers reverse proxy (Traefik, Caddy...)
 
 ---
 
-## ⚙️ Fonctionnalités clés
+## Prérequis
 
-- **Moteur de recherche avancé** de véhicules
-- **Split payment B2B** : L’acheteur paie le fournisseur, sans connaître son identité
+- Docker & Docker Compose installés
+- Ports ouverts sur la machine hôte (`5678`)
+- Réseau local fonctionnel
+
+---
+
+## Lancer n8n
+
+1. Clonez le projet ou copiez les fichiers
+2. Lancez :
+
+```bash
+docker compose up -d
