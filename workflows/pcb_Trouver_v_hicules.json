@@ -1,0 +1,179 @@
+{
+  "name": "pcb-Trouver-véhicules",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f6340d88-ba9c-4007-8bfd-a2b675f41778",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        980,
+        460
+      ],
+      "webhookId": "a889d2ae-2159-402f-b326-5f61e90f602e"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=You're a helpful assistant that helps the user answer questions about their calendar.\n\nToday is {{ $now.format('cccc') }} the {{ $now.format('yyyy-MM-dd HH:mm') }}."
+        }
+      },
+      "id": "8c5e423e-3b21-4380-a800-fafbddcd0b98",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1180,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 👋 Welcome to n8n!\nThis example shows how to build an AI Agent that interacts with your \ncalendar.\n\n### 1. Connect your accounts\n- Claim your `free` 100 OpenAI calls in the `OpenAI model` node \n- Connect your Google account in the `Google Calendar` node credentials section\n\n### 2. Ready to test it?\nClick Chat below and start asking questions! For example you can try `What meetings do I have today?`",
+        "height": 389,
+        "width": 319,
+        "color": 6
+      },
+      "id": "93de90c5-7a3f-47c7-a6bc-25161b1d8c44",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        620,
+        440
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "b4a3705a-b362-4e7e-9e24-bf8054474633",
+      "name": "Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1300,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Want to learn more?\nWant to learn more about AI and how to apply it best in n8n? Have a look at our [new tutorial series on YouTube](https://www.youtube.com/watch?v=yzvLfHb0nqE&lc).",
+        "height": 100,
+        "width": 317,
+        "color": 6
+      },
+      "id": "5960a5bc-1640-4b6d-bdf4-59e408b7de43",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        620,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        660
+      ],
+      "id": "35450822-c16a-4ac7-858f-1128e22f6ffa",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "ACsSTqH1VXnLghrn",
+          "name": "DeepSeek account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Le bon coin",
+        "url": "https://www.leboncoin.fr/recherche?category=2&text=peugeot+308&price=min-5000,max-15000&regions=occitanie",
+        "sendHeaders": true,
+        "parametersHeaders": {
+          "values": [
+            {
+              "name": "\tUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            },
+            {
+              "name": "Accept-Language: fr-FR,fr;q=0.9"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1500,
+        660
+      ],
+      "id": "0bff1b3a-1e36-4486-b76d-48d118d2aba1",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "81362e8f-a5ad-42fe-863e-44098af72190",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aad6c2ad55f281660624e63a382e485061b2df69ca62f0b91e7a97a8a3a009a4"
+  },
+  "id": "EHNxkHDpTlwXOw2C",
+  "tags": []
+}
