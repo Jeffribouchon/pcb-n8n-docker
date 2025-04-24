@@ -1,0 +1,92 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "drive",
+        "operation": "list",
+        "filters": {
+          "mimeType": "image/jpeg",
+          "parents": ["<ID_DU_DOSSIER>"]
+        },
+        "polling": {
+          "enabled": true,
+          "interval": 60
+        }
+      },
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": "={{$node[\"Google Drive Trigger\"].json[\"id\"]}}"
+      },
+      "name": "Download Image",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "file": "={{$node[\"Download Image\"].binary[\"data\"]}}",
+        "watermark": "={{$binary[\"logo_image\"]}}",
+        "position": "bottom-right",
+        "opacity": 0.5
+      },
+      "name": "Add Watermark",
+      "type": "n8n-nodes-base.imageManipulation",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "resource": "drive",
+        "operation": "upload",
+        "folderId": "<ID_DOSSIER_TRAITÉ>",
+        "binaryPropertyName": "data",
+        "fileName": "={{$node[\"Add Watermark\"].binary[\"file_name\"]}}"
+      },
+      "name": "Upload Processed Image",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image": {
+      "main": [
+        [
+          {
+            "node": "Add Watermark",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Watermark": {
+      "main": [
+        [
+          {
+            "node": "Upload Processed Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
