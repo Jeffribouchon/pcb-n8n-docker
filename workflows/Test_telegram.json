@@ -1,0 +1,75 @@
+{
+  "name": "Test telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        -120
+      ],
+      "id": "ebb61ace-8a79-4692-a97c-458f4fd7bc07",
+      "name": "Telegram Trigger",
+      "webhookId": "5619ffd6-7c6a-4f49-ac60-439b31ce1d40",
+      "credentials": {
+        "telegramApi": {
+          "id": "XPyDPUHD6VXhALnI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "J'ai bien recu votre message",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        260,
+        -120
+      ],
+      "id": "6f6bf557-87a6-4bd0-8ded-4b75b20bf129",
+      "name": "Telegram",
+      "webhookId": "4b769352-2f6b-4418-ae44-649c9986a9d8",
+      "credentials": {
+        "telegramApi": {
+          "id": "XPyDPUHD6VXhALnI",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7121a587-0637-472a-bb75-3cea88ad2afd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aad6c2ad55f281660624e63a382e485061b2df69ca62f0b91e7a97a8a3a009a4"
+  },
+  "id": "GPSVDhg9AZeqDgqZ",
+  "tags": []
+}
