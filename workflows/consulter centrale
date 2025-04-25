@@ -1,0 +1,88 @@
+{
+  "nodes": [
+    {
+      "id": "Start",
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "id": "Request_LaCentrale",
+      "parameters": {
+        "url": "https://www.lacentrale.fr/listing?makes=RENAULT&models=CLIO&priceMax=10000&yearMin=2015",
+        "responseFormat": "string",
+        "options": {
+          "followRedirect": true,
+          "timeout": 30000,
+          "headers": {
+            "User-Agent": "Mozilla/5.0"
+          }
+        }
+      },
+      "name": "HTTP - La Centrale",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "id": "Parse_HTML",
+      "parameters": {
+        "functionCode": "const cheerio = require('cheerio');\nconst $ = cheerio.load(items[0].json.body);\nconst results = [];\n\n$('.SearchResults__resultItem').each((index, element) => {\n  const title = $(element).find('.AdCard__title').text().trim();\n  const price = $(element).find('.AdCard__price').text().trim();\n  const year = $(element).find('.AdCard__year').text().trim();\n  const km = $(element).find('.AdCard__mileage').text().trim();\n  const link = 'https://www.lacentrale.fr' + $(element).find('a').attr('href');\n\n  results.push({\n    json: {\n      title,\n      price,\n      year,\n      km,\n      link\n    }\n  });\n});\n\nreturn results;"
+      },
+      "name": "Parse HTML",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [700, 300]
+    },
+    {
+      "id": "Send_Email",
+      "parameters": {
+        "fromEmail": "ton_email@exemple.com",
+        "toEmail": "destinataire@exemple.com",
+        "subject": "Résultats La Centrale - Recherche VO",
+        "text": "Voici les résultats de ta recherche :\n\n{{$json[\"title\"]}} - {{$json[\"price\"]}} - {{$json[\"year\"]}} - {{$json[\"km\"]}}\n{{$json[\"link\"]}}"
+      },
+      "name": "Envoyer Résultats",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [950, 300]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "HTTP - La Centrale",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - La Centrale": {
+      "main": [
+        [
+          {
+            "node": "Parse HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse HTML": {
+      "main": [
+        [
+          {
+            "node": "Envoyer Résultats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
