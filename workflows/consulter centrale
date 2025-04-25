@@ -11,7 +11,7 @@
     {
       "id": "HTTP_LaCentrale_ScraperAPI",
       "parameters": {
-        "url": "https://api.scraperapi.com/?api_key=your_api_key&url=https://www.lacentrale.fr/listing?makes=RENAULT&models=CLIO&priceMax=10000&yearMin=2015",
+        "url": "https://api.scraperapi.com/?api_key=0a4066abcf8f76b4fc60653d7531bcc5&url=https://www.lacentrale.fr/listing?makes=RENAULT&models=CLIO&priceMax=10000&yearMin=2015",
         "responseFormat": "string",
         "options": {
           "followRedirect": true,
