@@ -1,17 +1,16 @@
 {
   "nodes": [
     {
-      "id": "Start",
       "parameters": {},
+      "id": "Start",
       "name": "Start",
       "type": "n8n-nodes-base.start",
       "typeVersion": 1,
       "position": [250, 300]
     },
     {
-      "id": "HTTP_LaCentrale_ScraperAPI",
       "parameters": {
-        "url": "https://api.scraperapi.com/?api_key=0a4066abcf8f76b4fc60653d7531bcc5&url=http://www.autoccasion29.com/recherche?form%5BmakerSlug%5D=peugeot&form%5BmodelSlug%5D=2008&form%5BenergySlug%5D=essence&form%5Bsave%5D=",
+        "url": "https://api.scraperapi.com/?api_key=your_api_key&url=https://www.lacentrale.fr/listing?makes=RENAULT&models=CLIO&priceMax=10000&yearMin=2015",
         "responseFormat": "string",
         "options": {
           "followRedirect": true,
@@ -21,67 +20,107 @@
           }
         }
       },
-      "name": "HTTP - La Centrale via ScraperAPI",
+      "id": "HTTP_LaCentrale",
+      "name": "HTTP - La Centrale",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
-      "position": [450, 300]
+      "position": [450, 200]
     },
     {
-      "id": "Parse_HTML",
       "parameters": {
-        "functionCode": "const cheerio = require('cheerio');\nconst $ = cheerio.load(items[0].json.body);\nconst results = [];\n\n$('.SearchCard').each((index, element) => {\n  const title = $(element).find('.SearchCard__title').text().trim();\n  const price = $(element).find('.SearchCard__price').text().trim();\n  const year = $(element).find('.SearchCard__year').text().trim();\n  const km = $(element).find('.SearchCard__mileage').text().trim();\n  const link = 'https://www.lacentrale.fr' + $(element).find('a').attr('href');\n\n  results.push({\n    json: {\n      title,\n      price,\n      year,\n      km,\n      link\n    }\n  });\n});\n\nreturn results;"
+        "functionCode": "const cheerio = require('cheerio');\nconst $ = cheerio.load(items[0].json.body);\nconst results = [];\n\n$('.SearchCard').each((index, element) => {\n  const title = $(element).find('.SearchCard__title').text().trim();\n  const price = $(element).find('.SearchCard__price').text().trim();\n  const year = $(element).find('.SearchCard__year').text().trim();\n  const km = $(element).find('.SearchCard__mileage').text().trim();\n  const link = 'https://www.lacentrale.fr' + $(element).find('a').attr('href');\n\n  results.push({\n    json: {\n      source: 'La Centrale',\n      title,\n      price,\n      year,\n      km,\n      link\n    }\n  });\n});\n\nreturn results;"
       },
-      "name": "Parse HTML",
+      "id": "Parse_LaCentrale",
+      "name": "Parse HTML La Centrale",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [700, 300]
+      "position": [700, 200]
     },
     {
-      "id": "Send_Email",
+      "parameters": {
+        "url": "https://api.scraperapi.com/?api_key=your_api_key&url=https://www.leboncoin.fr/recherche?category=2&manufacturer=renault&model=clio&price=0-10000",
+        "responseFormat": "string",
+        "options": {
+          "followRedirect": true,
+          "timeout": 30000,
+          "headers": {
+            "User-Agent": "Mozilla/5.0"
+          }
+        }
+      },
+      "id": "HTTP_LBC",
+      "name": "HTTP - Le Bon Coin",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "functionCode": "const cheerio = require('cheerio');\nconst $ = cheerio.load(items[0].json.body);\nconst results = [];\n\n$('a[data-qa-id=\"aditem_container\"]').each((index, element) => {\n  const title = $(element).find('[data-qa-id=\"aditem_title\"]').text().trim();\n  const price = $(element).find('[data-qa-id=\"aditem_price\"]').text().trim();\n  const location = $(element).find('[data-qa-id=\"aditem_location\"]').text().trim();\n  const link = 'https://www.leboncoin.fr' + $(element).attr('href');\n\n  results.push({\n    json: {\n      source: 'Le Bon Coin',\n      title,\n      price,\n      location,\n      link\n    }\n  });\n});\n\nreturn results;"
+      },
+      "id": "Parse_LBC",
+      "name": "Parse HTML LBC",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [700, 400]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineMode": "append"
+      },
+      "id": "Merge",
+      "name": "Fusionner Résultats",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [950, 300]
+    },
+    {
       "parameters": {
         "fromEmail": "ton_email@exemple.com",
         "toEmail": "destinataire@exemple.com",
-        "subject": "Résultats La Centrale via ScraperAPI",
-        "text": "Voici les résultats de ta recherche :\n\n{{$json[\"title\"]}} - {{$json[\"price\"]}} - {{$json[\"year\"]}} - {{$json[\"km\"]}}\n{{$json[\"link\"]}}"
+        "subject": "Résultats La Centrale + LBC",
+        "text": "=Source: {{$json[\"source\"]}}\n{{$json[\"title\"]}} - {{$json[\"price\"]}} - {{$json[\"year\"] || $json[\"location\"]}}\n{{$json[\"km\"] || ''}}\n{{$json[\"link\"]}}\n---"
       },
+      "id": "Email",
       "name": "Envoyer Résultats",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 1,
-      "position": [950, 300]
+      "position": [1150, 300]
     }
   ],
   "connections": {
     "Start": {
       "main": [
         [
-          {
-            "node": "HTTP - La Centrale via ScraperAPI",
-            "type": "main",
-            "index": 0
-          }
+          { "node": "HTTP - La Centrale", "type": "main", "index": 0 },
+          { "node": "HTTP - Le Bon Coin", "type": "main", "index": 0 }
         ]
       ]
     },
-    "HTTP - La Centrale via ScraperAPI": {
+    "HTTP - La Centrale": {
       "main": [
-        [
-          {
-            "node": "Parse HTML",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "Parse HTML La Centrale", "type": "main", "index": 0 }]
       ]
     },
-    "Parse HTML": {
+    "Parse HTML La Centrale": {
       "main": [
-        [
-          {
-            "node": "Envoyer Résultats",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "Fusionner Résultats", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP - Le Bon Coin": {
+      "main": [
+        [{ "node": "Parse HTML LBC", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse HTML LBC": {
+      "main": [
+        [{ "node": "Fusionner Résultats", "type": "main", "index": 1 }]
+      ]
+    },
+    "Fusionner Résultats": {
+      "main": [
+        [{ "node": "Envoyer Résultats", "type": "main", "index": 0 }]
       ]
     }
   }
