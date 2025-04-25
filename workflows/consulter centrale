@@ -9,9 +9,9 @@
       "position": [250, 300]
     },
     {
-      "id": "Request_LaCentrale",
+      "id": "HTTP_LaCentrale_ScraperAPI",
       "parameters": {
-        "url": "https://www.lacentrale.fr/listing?makes=RENAULT&models=CLIO&priceMax=10000&yearMin=2015",
+        "url": "https://api.scraperapi.com/?api_key=your_api_key&url=https://www.lacentrale.fr/listing?makes=RENAULT&models=CLIO&priceMax=10000&yearMin=2015",
         "responseFormat": "string",
         "options": {
           "followRedirect": true,
@@ -21,7 +21,7 @@
           }
         }
       },
-      "name": "HTTP - La Centrale",
+      "name": "HTTP - La Centrale via ScraperAPI",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 2,
       "position": [450, 300]
@@ -29,7 +29,7 @@
     {
       "id": "Parse_HTML",
       "parameters": {
-        "functionCode": "const cheerio = require('cheerio');\nconst $ = cheerio.load(items[0].json.body);\nconst results = [];\n\n$('.SearchResults__resultItem').each((index, element) => {\n  const title = $(element).find('.AdCard__title').text().trim();\n  const price = $(element).find('.AdCard__price').text().trim();\n  const year = $(element).find('.AdCard__year').text().trim();\n  const km = $(element).find('.AdCard__mileage').text().trim();\n  const link = 'https://www.lacentrale.fr' + $(element).find('a').attr('href');\n\n  results.push({\n    json: {\n      title,\n      price,\n      year,\n      km,\n      link\n    }\n  });\n});\n\nreturn results;"
+        "functionCode": "const cheerio = require('cheerio');\nconst $ = cheerio.load(items[0].json.body);\nconst results = [];\n\n$('.SearchCard').each((index, element) => {\n  const title = $(element).find('.SearchCard__title').text().trim();\n  const price = $(element).find('.SearchCard__price').text().trim();\n  const year = $(element).find('.SearchCard__year').text().trim();\n  const km = $(element).find('.SearchCard__mileage').text().trim();\n  const link = 'https://www.lacentrale.fr' + $(element).find('a').attr('href');\n\n  results.push({\n    json: {\n      title,\n      price,\n      year,\n      km,\n      link\n    }\n  });\n});\n\nreturn results;"
       },
       "name": "Parse HTML",
       "type": "n8n-nodes-base.function",
@@ -41,7 +41,7 @@
       "parameters": {
         "fromEmail": "ton_email@exemple.com",
         "toEmail": "destinataire@exemple.com",
-        "subject": "Résultats La Centrale - Recherche VO",
+        "subject": "Résultats La Centrale via ScraperAPI",
         "text": "Voici les résultats de ta recherche :\n\n{{$json[\"title\"]}} - {{$json[\"price\"]}} - {{$json[\"year\"]}} - {{$json[\"km\"]}}\n{{$json[\"link\"]}}"
       },
       "name": "Envoyer Résultats",
@@ -55,14 +55,14 @@
       "main": [
         [
           {
-            "node": "HTTP - La Centrale",
+            "node": "HTTP - La Centrale via ScraperAPI",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP - La Centrale": {
+    "HTTP - La Centrale via ScraperAPI": {
       "main": [
         [
           {
