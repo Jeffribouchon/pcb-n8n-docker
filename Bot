@@ -1,0 +1,154 @@
+# bot.py
+import os
+import telegram
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from deepseek_api import query_deepseek
+from odoo_client import search_vehicles
+
+AUTHORIZED_IDS = os.getenv("AUTHORIZED_IDS", "").split(",")
+
+
+def start(update, context):
+    if str(update.effective_user.id) not in AUTHORIZED_IDS:
+        update.message.reply_text("⛔️ Accès refusé.")
+        return
+    update.message.reply_text("🤖 Bonjour ! Posez-moi une question sur vos véhicules.")
+
+
+def handle_message(update, context):
+    user_id = str(update.effective_user.id)
+    if user_id not in AUTHORIZED_IDS:
+        update.message.reply_text("⛔️ Accès refusé.")
+        return
+    prompt = update.message.text
+    update.message.reply_text("💬 Réflexion en cours...")
+    deepseek_response = query_deepseek(prompt)
+    odoo_results = search_vehicles(deepseek_response)
+    update.message.reply_text(odoo_results or "Aucun véhicule trouvé.")
+
+
+def main():
+    updater = Updater(os.getenv("TELEGRAM_TOKEN"), use_context=True)
+    dp = updater.dispatcher
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+    updater.start_polling()
+    updater.idle()
+
+
+if __name__ == '__main__':
+    main()
+
+
+# deepseek_api.py
+import requests
+import os
+
+def query_deepseek(prompt):
+    url = os.getenv("DEEPSEEK_URL")
+    headers = {"Authorization": f"Bearer {os.getenv('DEEPSEEK_API_KEY')}", "Content-Type": "application/json"}
+    data = {"prompt": prompt, "temperature": 0.5, "max_tokens": 150}
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
+        return response.json().get("response", "")
+    except Exception as e:
+        return f"Erreur DeepSeek : {e}"
+
+
+# odoo_client.py
+import xmlrpc.client
+import os
+
+url = os.getenv("ODOO_URL")
+db = os.getenv("ODOO_DB")
+username = os.getenv("ODOO_USER")
+password = os.getenv("ODOO_PASSWORD")
+
+common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
+uid = common.authenticate(db, username, password, {})
+models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+
+def search_vehicles(query):
+    try:
+        ids = models.execute_kw(db, uid, password,
+                                'product.template', 'search',
+                                [[['name', 'ilike', query]]], {'limit': 5})
+        if not ids:
+            return "Aucun véhicule trouvé."
+        products = models.execute_kw(db, uid, password,
+                                     'product.template', 'read',
+                                     [ids], {'fields': ['name', 'list_price']})
+        return "\n".join([f"🚗 {p['name']} - {p['list_price']} €" for p in products])
+    except Exception as e:
+        return f"Erreur Odoo : {e}"
+
+
+# main.py
+from bot import main as run_bot
+
+if __name__ == '__main__':
+    run_bot()
+
+
+# requirements.txt
+python-telegram-bot==13.15
+requests
+
+
+# docker-compose.yml
+version: '3.8'
+services:
+  bot:
+    build: .
+    env_file:
+      - .env
+    restart: unless-stopped
+
+
+# .env
+TELEGRAM_TOKEN=your_telegram_token
+AUTHORIZED_IDS=12345678,87654321
+ODOO_URL=https://platformcars-b2b.odoo.com
+ODOO_DB=platformcars-b2b
+ODOO_USER=jeff.ribouchon@gmail.com
+ODOO_PASSWORD=your_odoo_password
+DEEPSEEK_API_KEY=your_deepseek_key
+DEEPSEEK_URL=https://api.deepseek.com/inference
+
+
+# README.md
+# 🤖 Telegram Bot IA pour Odoo avec DeepSeek
+
+Ce bot répond à des questions Telegram et recherche des véhicules dans Odoo grâce à une IA DeepSeek.
+
+## 🚀 Lancer le projet
+
+```bash
+git clone https://github.com/votre-repo/watermark4odoo.git
+cd watermark4odoo
+cp .env.example .env  # Personnalisez les variables d'environnement
+docker compose up --build
+```
+
+## 🔧 Configuration
+- `TELEGRAM_TOKEN` : token du bot Telegram
+- `AUTHORIZED_IDS` : ID Telegram autorisés (séparés par des virgules)
+- `ODOO_*` : infos de connexion Odoo Online
+- `DEEPSEEK_API_KEY` : clé API DeepSeek
+- `DEEPSEEK_URL` : endpoint API DeepSeek
+
+## ✅ Fonctionnalités
+- Authentification par ID Telegram
+- Génération IA avec DeepSeek
+- Recherche intelligente de produits dans Odoo
+
+## 🐳 Déploiement
+Compatible Docker sur Raspberry Pi avec architecture ARM.
+
+## 🛠 Dépendances
+Voir `requirements.txt`
+
+---
+
+Pour ajouter des fonctionnalités : recherche avancée, tri, réponse formatée en carte… Contacte-moi !
